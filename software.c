@@ -1,3 +1,5 @@
+//12MHz
+
 #include <stc12.h>
 
 // -------------------------
@@ -202,7 +204,7 @@ char busy = 0;
 SFR(T2H, 0xD6);
 SFR(T2L, 0xD7);
 
-void UartInit()			//9600bps@24.000MHz
+void UartInit()			//9600bps@12.000MHz
 {
 	SCON = 0x50;		//8位数据,可变波特率
 	AUXR |= 0x01;		//串口1选择定时器2为波特率发生器
@@ -265,7 +267,7 @@ __code char TubeSel[8] = {0x20, 0x40, 0x80, 0x10};
 
 // -------------------------
 
-void Tmr0Init()			//@24.000MHz
+void Tmr0Init()			//@12.000MHz
 {
 	AUXR &= 0x7F;
 	TMOD &= 0xF0;
