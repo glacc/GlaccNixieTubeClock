@@ -250,20 +250,20 @@ void InitPins()
 
 int tick = 0;
 
-char keyPrs = 0;
+char key_pressed = 0;
 
-char updReq = 0;
+char update_req = 0;
 unsigned char sec = 0;
 unsigned char min = 0;
-unsigned char hour = 0;
-unsigned char secOld = 0;
+unsigned char hrs = 0;
+unsigned char sec_old = 0;
 char digit[4] = {0, 0, 0, 0};
 
 char brightness = 4;
 
-char tubeCounter = 0;
+char tube_counter = 0;
 char colon = 0;
-__code char TubeSel[8] = {0x20, 0x40, 0x80, 0x10};
+__code char tube_selector[8] = {0x20, 0x40, 0x80, 0x10};
 
 // -------------------------
 
