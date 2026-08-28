@@ -54,7 +54,7 @@ const unsigned char key_repeat_interval = 175;
 const unsigned char update_interval = 100;
 
 const char auto_shuffle_index = 0;
-__code const unsigned char shuffle_step_interval[] = { 200, 100, 10 };
+__code const unsigned char shuffle_step_interval[] = { 200, 10 };
 
 __code const char auto_shuffle_mins[] = { 0x00, 0x15, 0x30, 0x45 };
 const char auto_shuffle_secs[] = { 5, 15, 25, 35, 45, 55 };
@@ -408,7 +408,9 @@ void TMR0Interrupt(void) __interrupt (1) __using (1)
             shuffle_count++;
             if (shuffle_count >= 10)
             {
-                randomize_req = 1;
+                if (shuffle_enabled)
+                    randomize_req = 1;
+
                 shuffle_count = 0;
             }
 
@@ -698,10 +700,20 @@ void main(void)
             }
             else
             {
-                digits_pending[0] = digits_randomize[0][shuffle_count];
-                digits_pending[1] = digits_randomize[1][shuffle_count];
-                digits_pending[2] = digits_randomize[2][shuffle_count];
-                digits_pending[3] = digits_randomize[3][shuffle_count];
+                if (shuffle_enabled)
+                {
+                    digits_pending[0] = digits_randomize[0][shuffle_count];
+                    digits_pending[1] = digits_randomize[1][shuffle_count];
+                    digits_pending[2] = digits_randomize[2][shuffle_count];
+                    digits_pending[3] = digits_randomize[3][shuffle_count];
+                }
+                else
+                {
+                    digits_pending[0] =
+                    digits_pending[1] =
+                    digits_pending[2] =
+                    digits_pending[3] = shuffle_count;
+                }
             }
             digits_prepared = 1;
 
