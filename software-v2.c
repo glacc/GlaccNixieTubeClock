@@ -33,7 +33,7 @@ const unsigned char key_repeat_interval = 175;
 
 const unsigned char update_interval = 100;
 
-const char auto_shuffle_index = 1;
+const char auto_shuffle_index = 0;
 __code const unsigned char shuffle_step_interval[] = { 200, 100, 10 };
 
 __code const char auto_shuffle_mins[] = { 0x00, 0x15, 0x30, 0x45 };
@@ -597,20 +597,6 @@ void main(void)
             for (int i = 0; i < 4; i++)
             {
                 char last = digits_randomize[i][9];
-
-                /*
-                for (int j = 0; j < 10; j++)
-                    digits_randomize[i][j] = j;
-
-                for (int j = 0; j < 10; j++)
-                {
-                    char k = ((char)XORShift32Next()) % 10;
-                    
-                    char temp = digits_randomize[i][j];
-                    digits_randomize[i][j] = digits_randomize[i][k];
-                    digits_randomize[i][k] = temp;
-                }
-                */
 
                 // random swap
                 char a = ((char)XORShift32Next()) % 10;
