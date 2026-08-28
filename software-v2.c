@@ -805,12 +805,19 @@ void main(void)
             sec = Read1302(0x81) & 0x7F;
             min = Read1302(0x83) & 0x7F;
 
+            char colon_update = 1;
+
             if (shuffle_enabled)
             {
                 if (shuffle_cycling_step_interval[shuffle_enabled - 1] < 50)
-                    colon = 0xFF;
+                {
+                    colon_update = 0;
+
+                    colon = 0x00;
+                }
             }
-            else
+
+            if (colon_update)
             {
                 if (sec_old != sec)
                     colon = ~colon;
