@@ -59,6 +59,8 @@ __code const unsigned char shuffle_cycling_step_interval[] = { 200, 8 };
 __code const char auto_cycling_mins[] = { 0x00, 0x15, 0x30, 0x45 };
 const char auto_cycling_secs[] = { 5, 15, 25, 35, 45, 55 };
 
+const unsigned char divider = 1;
+
 // custom settings address in DS1302 --
 
 const unsigned char addr1302_brightness = 0xC0;
@@ -116,6 +118,8 @@ unsigned char digits[4] = { 0, 0, 0, 0 };
 volatile char digits_prepared = 0;
 
 unsigned char brightness = 4;
+
+unsigned char divider_tick = 0;
 
 char tube_counter = 0;
 char colon = 0;
@@ -396,12 +400,28 @@ void InitTMR0(void)
 
 void TMR0Interrupt(void) __interrupt (1) __using (1)
 {
-    Write595(tube_selector[tube_counter] | ((tube_counter < 4) ? digits[tube_counter] : digits[0]));
-    COLON = ((tube_counter < 2) && (colon != 0));
+    divider_tick++;
 
-    tube_counter ++ ;
-    if (tube_counter >= 8 - brightness)
-        tube_counter = 0;
+    if (divider_tick >= divider)
+    {
+        Write595(tube_selector[tube_counter] | ((tube_counter < 4) ? digits[tube_counter] : digits[0]));
+        COLON = ((tube_counter < 2) && (colon != 0));
+
+        if (digits_prepared)
+        {
+            digits[0] = digits_pending[0];
+            digits[1] = digits_pending[1];
+            digits[2] = digits_pending[2];
+            digits[3] = digits_pending[3];
+            digits_prepared = 0;
+        }
+
+        tube_counter ++ ;
+        if (tube_counter >= 8 - brightness)
+            tube_counter = 0;
+
+        divider_tick = 0;
+    }
 
     // key repeat
     if (key_pressed)
@@ -448,15 +468,6 @@ void TMR0Interrupt(void) __interrupt (1) __using (1)
     {
         shuffle_cycling_tick = 0;
         shuffle_cycling_count = 0;
-    }
-
-    if (digits_prepared)
-    {
-        digits[0] = digits_pending[0];
-        digits[1] = digits_pending[1];
-        digits[2] = digits_pending[2];
-        digits[3] = digits_pending[3];
-        digits_prepared = 0;
     }
 
     TF0 = 0;    // clear TF0 flag
@@ -858,30 +869,33 @@ void main(void)
             if (!no_shuffle_old && no_shuffle)
                 ResetShuffleDigits();
             
-            if (no_shuffle)
+            if (!digits_prepared)
             {
-                hour = Read1302(0x85) & 0x3F;
-
-                digits_pending[0] = (hour >> 4) & 0x03;
-                digits_pending[1] = hour & 0x0F;
-                digits_pending[2] = (min >> 4) & 0x07;
-                digits_pending[3] = min & 0x0F;
-            }
-            else
-            {
-                if (shuffle_enabled)
+                if (no_shuffle)
                 {
-                    digits_pending[0] = digits_randomize[0][shuffle_cycling_count];
-                    digits_pending[1] = digits_randomize[1][shuffle_cycling_count];
-                    digits_pending[2] = digits_randomize[2][shuffle_cycling_count];
-                    digits_pending[3] = digits_randomize[3][shuffle_cycling_count];
+                    hour = Read1302(0x85) & 0x3F;
+
+                    digits_pending[0] = (hour >> 4) & 0x03;
+                    digits_pending[1] = hour & 0x0F;
+                    digits_pending[2] = (min >> 4) & 0x07;
+                    digits_pending[3] = min & 0x0F;
                 }
                 else
                 {
-                    digits_pending[0] =
-                    digits_pending[1] =
-                    digits_pending[2] =
-                    digits_pending[3] = shuffle_cycling_count;
+                    if (shuffle_enabled)
+                    {
+                        digits_pending[0] = digits_randomize[0][shuffle_cycling_count];
+                        digits_pending[1] = digits_randomize[1][shuffle_cycling_count];
+                        digits_pending[2] = digits_randomize[2][shuffle_cycling_count];
+                        digits_pending[3] = digits_randomize[3][shuffle_cycling_count];
+                    }
+                    else
+                    {
+                        digits_pending[0] =
+                        digits_pending[1] =
+                        digits_pending[2] =
+                        digits_pending[3] = shuffle_cycling_count;
+                    }
                 }
             }
             digits_prepared = 1;
